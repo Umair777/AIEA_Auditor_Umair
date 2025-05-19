@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: umair-cnn-job
+spec:
+  backoffLimit: 2  # Retry at most 2 times if it fails
+  ttlSecondsAfterFinished: 600  # Optional: auto-cleanup after 10 minutes
+  template:
+    spec:
+      containers:
+      - name: cnn-trainer
+        image: pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime
+        command:
+          - sh
+          - -c
+          - >
+            pip install matplotlib "numpy<2.0" &&
+            echo 'RUN TRAINING' &&
+            python3 /pvcvolume/cifar10train.py
+        volumeMounts:
+        - name: training-data
+          mountPath: /pvcvolume
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+            nvidia.com/gpu: 1
+          requests:
+            memory: "2Gi"
+            cpu: "1"
+            nvidia.com/gpu: 1
+      restartPolicy: Never
+      volumes:
+      - name: training-data
+        persistentVolumeClaim:
+          claimName: mashraf1-pvc

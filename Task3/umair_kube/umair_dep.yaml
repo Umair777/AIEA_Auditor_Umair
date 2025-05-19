@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: umair-cnn-deploy
+  labels:
+    k8s-app: umair-cnn-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: umair-cnn-deploy
+  template:
+    metadata:
+      labels:
+        k8s-app: umair-cnn-deploy
+    spec:
+      containers:
+      - name: pytorch-trainer
+        image: pytorch/pytorch:1.13.0-cuda11.6-cudnn8-runtime
+        command: ["sh", "-c", "sleep infinity"]
+        volumeMounts:
+        - mountPath: /pvcvolume
+          name: training-data
+        resources:
+          limits:
+            memory: "16Gi"
+            cpu: "4"
+            nvidia.com/gpu: 1
+          requests:
+            memory: "8Gi"
+            cpu: "2"
+            nvidia.com/gpu: 1
+      restartPolicy: Always
+      volumes:
+      - name: training-data
+        persistentVolumeClaim:
+          claimName: mashraf1-pvc
